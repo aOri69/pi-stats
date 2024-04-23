@@ -38,7 +38,7 @@ pub fn print_output_data() {
 
     println!(
         // "{:<5},{:<6},{:<7}.{:<8.3}\n",
-        "{:},{:},{:},{:.3},{:},{:}\n",
+        "{:},{:},{:},{:.3},{:},{:}",
         get_temp(),
         get_clock(),
         get_throttle(),
