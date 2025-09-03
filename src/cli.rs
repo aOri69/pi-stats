@@ -1,41 +1,64 @@
-use std::sync::mpsc::Receiver;
+use std::time::Duration;
 
-use crate::Result;
+use tokio::{signal, time};
+
+use crate::Rpi;
 
 pub struct App {
-    exit: bool,
-    ctrlc_rx: Option<Receiver<()>>,
+    tick_interval: Duration,
+    platform: Rpi,
 }
 
 impl App {
     pub fn new() -> Self {
         Self {
-            exit: false,
-            ctrlc_rx: None,
+            platform: Rpi::default(),
+            tick_interval: Duration::from_millis(500),
         }
     }
 
-    pub fn with_ctrlc_handler(mut self) -> Result<Self> {
-        self.ctrlc_rx = Some(spawn_ctrlc_handler()?);
-        Ok(self)
+    pub fn with_tick_duration(mut self, duration: Duration) -> Self {
+        self.tick_interval = duration;
+        self
     }
 
-    pub fn refresh(&self) {}
+    pub async fn run(&mut self) {
+        let mut interval = time::interval(self.tick_interval);
 
-    pub fn exit(&self) -> bool {
-        match &self.ctrlc_rx {
-            Some(rx) => rx.try_recv().is_ok(),
-            None => self.exit,
+        loop {
+            tokio::select! {
+                _ = interval.tick() => {
+                    self.platform.update().unwrap_or_else(|_|todo!());
+                    self.draw().await
+                }
+                _ = signal::ctrl_c()=>{
+                    println!("Ctrl-C signal received, shutting down.");
+                    break;
+                }
+            }
         }
     }
-}
 
-fn spawn_ctrlc_handler() -> Result<std::sync::mpsc::Receiver<()>> {
-    let (ctrlc_tx, ctrlc_rx) = std::sync::mpsc::channel();
-    ctrlc::try_set_handler(move || {
-        ctrlc_tx
-            .send(())
-            .expect("Expected to send a signal on channel")
-    })?;
-    Ok(ctrlc_rx)
+    async fn draw(&self) {
+        println!("Data:-------------------------");
+        println!("CPU CLK : {:}", self.platform.cpu.clock.arm);
+        println!("GPU CLK : {:}", self.platform.cpu.clock.gpu);
+        println!("CPU TEMP: {:}", *self.platform.cpu.temp);
+        println!("FAN PWM : {:}", self.platform.fan.pwm);
+        println!("FAN RPM : {:}", self.platform.fan.rpm);
+        println!("THROTTLE: {:?}", self.platform.power.throttle.current);
+        println!("THROTHAS: {:?}", self.platform.power.throttle.happened);
+        println!(
+            "POWER   : {:}",
+            self.platform
+                .power
+                .power
+                .power_map
+                .iter()
+                .map(|m| m.amps * m.volts)
+                .sum::<f32>()
+        );
+        println!("Log:--------------------------");
+        println!("");
+    }
 }
