@@ -4,6 +4,7 @@ use tokio::{signal, time};
 
 use crate::Rpi;
 
+#[derive(Default)]
 pub struct App {
     tick_interval: Duration,
     platform: Rpi,
@@ -59,6 +60,6 @@ impl App {
                 .sum::<f32>()
         );
         println!("Log:--------------------------");
-        println!("");
+        println!();
     }
 }
