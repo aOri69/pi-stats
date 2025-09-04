@@ -18,7 +18,7 @@
 use std::{collections::HashMap, str::FromStr};
 
 use crate::{
-    command::{Arg, Vcgencmd},
+    platform::command::{Arg, Vcgencmd},
     Result,
 };
 #[derive(Debug, Default)]

@@ -1,3 +1,4 @@
+mod command;
 mod cpu;
 mod fan;
 mod power;

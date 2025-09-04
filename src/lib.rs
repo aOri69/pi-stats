@@ -1,7 +1,6 @@
 //! # Crate lib
 
 mod cli;
-mod command;
 mod error;
 mod platform;
 

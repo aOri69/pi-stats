@@ -1,7 +1,7 @@
 use std::{ops::Deref, str::FromStr};
 
 use crate::{
-    command::{Arg, Vcgencmd},
+    platform::command::{Arg, Vcgencmd},
     Error, Result,
 };
 
@@ -65,15 +65,16 @@ pub struct CpuClock {
 
 impl CpuClock {
     pub fn new() -> Result<Self> {
+        use Arg::*;
         Ok(Self {
-            arm: Vcgencmd::run(&[Arg::MeasureClockArm.as_str()])?
+            arm: Vcgencmd::run(&[MeasureClock.as_str(), Arm.as_str()])?
                 .trim()
                 .strip_prefix("frequency(0)=")
                 .ok_or(Error::ParseCommand(String::from(
                     "Failed to strip prefix: frequency(0)=",
                 )))?
                 .parse::<Clock>()?,
-            gpu: Vcgencmd::run(&[Arg::MeasureClockCore.as_str()])?
+            gpu: Vcgencmd::run(&[MeasureClock.as_str(), Core.as_str()])?
                 .trim()
                 .strip_prefix("frequency(0)=")
                 .ok_or(Error::ParseCommand(String::from(
