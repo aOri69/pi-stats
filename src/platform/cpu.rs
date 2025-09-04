@@ -1,12 +1,32 @@
-use std::ops::Deref;
+use std::{ops::Deref, str::FromStr};
 
 use crate::{
     command::{Arg, Vcgencmd},
     Error, Result,
 };
 
-pub type ClockValue = u32;
+pub type ClockHz = u32;
+pub type ClockMhz = f32;
 pub type TempValue = f32;
+
+#[derive(Default)]
+pub struct Clock(ClockMhz);
+
+impl Deref for Clock {
+    type Target = ClockMhz;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl FromStr for Clock {
+    type Err = Error;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        Ok(Clock((s.parse::<ClockHz>()? as ClockMhz) / 1_000_000.0))
+    }
+}
 
 #[derive(Default)]
 pub struct CpuTemp(TempValue);
@@ -39,8 +59,8 @@ impl CpuTemp {
 
 #[derive(Default)]
 pub struct CpuClock {
-    pub arm: ClockValue,
-    pub gpu: ClockValue,
+    pub arm: Clock,
+    pub gpu: Clock,
 }
 
 impl CpuClock {
@@ -52,14 +72,14 @@ impl CpuClock {
                 .ok_or(Error::ParseCommand(String::from(
                     "Failed to strip prefix: frequency(0)=",
                 )))?
-                .parse()?,
+                .parse::<Clock>()?,
             gpu: Vcgencmd::run(&[Arg::MeasureClockCore.as_str()])?
                 .trim()
                 .strip_prefix("frequency(0)=")
                 .ok_or(Error::ParseCommand(String::from(
                     "Failed to strip prefix: frequency(0)=",
                 )))?
-                .parse()?,
+                .parse::<Clock>()?,
         })
     }
 }

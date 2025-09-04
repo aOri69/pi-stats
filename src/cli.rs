@@ -42,8 +42,8 @@ impl App {
 
     async fn draw(&self) {
         println!("Data:-------------------------");
-        println!("CPU CLK : {:}", self.platform.cpu.clock.arm);
-        println!("GPU CLK : {:}", self.platform.cpu.clock.gpu);
+        println!("CPU CLK : {:.2}", *self.platform.cpu.clock.arm);
+        println!("GPU CLK : {:.2}", *self.platform.cpu.clock.gpu);
         println!("CPU TEMP: {:}", *self.platform.cpu.temp);
         println!("FAN PWM : {:}", self.platform.fan.pwm);
         println!("FAN RPM : {:}", self.platform.fan.rpm);
