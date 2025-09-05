@@ -138,8 +138,11 @@ impl Power {
             }
         }
 
+        let mut sorted_measurements = measurements.into_values().collect::<Vec<_>>();
+        sorted_measurements.sort_unstable_by(|a, b| a.measure.cmp(&b.measure));
+
         Ok(Self {
-            power_map: measurements.into_values().collect(),
+            power_map: sorted_measurements,
         })
     }
 }

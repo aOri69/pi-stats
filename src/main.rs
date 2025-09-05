@@ -1,10 +1,14 @@
-use pi_stats::{App, Error};
+use color_eyre::Result;
+use pi_stats::App;
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
-    App::new()
+async fn main() -> Result<()> {
+    color_eyre::install()?;
+    let terminal = ratatui::init();
+    let app_result = App::new()
         .with_tick_duration(std::time::Duration::from_millis(500))
-        .run()
+        .run(terminal)
         .await;
-    Ok(())
+    ratatui::restore();
+    app_result
 }
