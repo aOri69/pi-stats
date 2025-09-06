@@ -80,16 +80,21 @@ fn bit_is_set(input: u32, bit: u32) -> bool {
     (input & (1u32 << bit)) != 0
 }
 
+pub type Watt = f32;
+pub type Volt = f32;
+pub type Amp = f32;
+
 #[derive(Debug)]
 pub struct PowerMeasure {
     pub measure: String,
-    pub volts: f32,
-    pub amps: f32,
+    pub volts: Volt,
+    pub amps: Amp,
 }
 
 #[derive(Debug, Default)]
 pub struct Power {
     pub power_map: Vec<PowerMeasure>,
+    pub total_power: Watt,
 }
 
 impl Power {
@@ -138,11 +143,17 @@ impl Power {
             }
         }
 
-        let mut sorted_measurements = measurements.into_values().collect::<Vec<_>>();
-        sorted_measurements.sort_unstable_by(|a, b| a.measure.cmp(&b.measure));
+        let mut power_map = measurements.into_values().collect::<Vec<_>>();
+        power_map.sort_unstable_by(|a, b| a.measure.cmp(&b.measure));
+
+        let total_power: Watt = power_map
+            .iter()
+            .map(|measure| measure.volts * measure.amps)
+            .sum();
 
         Ok(Self {
-            power_map: sorted_measurements,
+            power_map,
+            total_power,
         })
     }
 }
