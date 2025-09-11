@@ -1,95 +1,57 @@
-# Raspberry Pi System Monitor
+# Raspberry Pi System Monitor`
 
 A **command-line tool** to monitor and log Raspberry Pi system parameters—CPU temperature, ARM clock speed, throttling status, power consumption, and fan data—in real time.
 
+> **Disclaimer**
+> This project is developed primarily for learning the Rust programming language and for personal use.
+
 ## Features
 
-- **Live output** of system data: temperature, ARM clock (MHz), throttling status, total power (W), fan PWM, and fan RPM
-- **Customizable update interval** (default: 1000 ms; override with command-line argument)
-- **Graceful Ctrl+C handling** for a clean shutdown
-- **CSV format output**, suitable for direct logging
+- Live output presented in a terminal UI with power consumption chart
+- Dynamic update interval adjustment inside the UI with + and - keys
+- Power consumption chart
+- Clean exit with q, Esc, or Ctrl+C
+- tiny resource requirements and async main loop
+
+## Installation
+
+Can be installed via cargo:
+
+```shell
+cargo install --path .
+```
 
 ## Usage
 
-```shell
-cargo run -- <INTERVAL_MS>
-```
-
-- `<INTERVAL_MS>` is an optional update interval in milliseconds (default: `1000`).
-
-**Example:**
+Simply run the program without arguments:
 
 ```shell
-cargo run -- 1500
+cargo run
 ```
 
-## Piping Output to CSV
+### User Controls
 
-This tool is intended to be used with a shell pipe to save output directly to a CSV file.
+- `q` or `Esc` — quit the application
+- `Ctrl+C` — quit gracefully
+- `+` — increase update interval
+- `-` — decrease update interval
 
-**Write new log (overwrite):**
+## Output
 
-```shell
-cargo run -- 1000 > monitor_data.csv
-```
+Information is displayed live in the terminal. 
+A scrolling chart shows recent power consumption data.
 
-**Append to existing log:**
+## Planned Features
 
-```shell
-cargo run -- 1000 >> monitor_data.csv
-```
-
-**Add timestamps (first column) using `awk`:**
-
-```shell
-cargo run -- 1000 | awk -v OFS=',' '{ print strftime("%Y-%m-%d %H:%M:%S"), $0 }' > monitor_data.csv
-```
-
-**Log only a fixed number of samples (e.g., 10):**
-
-```shell
-cargo run -- 1000 | head -n 10 > monitor_data.csv
-```
-
-## Output Format
-
-Each line is a CSV row:
-
-`<Temp>,<Clock MHz>,<Throttle>,<Power(W)>,<PWM>,<Fan RPM>`
-
-Where:
-- **Temp**: CPU temperature (°C)
-- **Clock MHz**: ARM frequency (MHz)
-- **Throttle**: `true` if currently throttled
-- **Power(W)**: Total estimated power (W)
-- **PWM**: Fan PWM duty
-- **Fan RPM**: Fan speed (RPM)
-
-## Example Output
-
-`48.9,1500,true,2.513,80,2400`
-
-
-## Ctrl+C Handling
-
-Pressing **Ctrl+C** will print a message and exit gracefully.
+- CSV or log file output for recorded data
+- historical chart feature based on the recorded data
 
 ## Requirements
 
 - **Rust** toolchain (for compilation and running)
 - `vcgencmd` utility (included on Raspberry Pi OS)
-- Fan monitoring files at `/sys/devices/platform/cooling_fan/hwmon/*/{pwm1,fan1_input}` (if hardware supports it)
-
-## How It Works
-
-- The tool reads command-line arguments for the update interval (in milliseconds).
-- On each loop:
-  - Clears the console
-  - Gathers sensor and system data
-  - Prints a formatted CSV line to stdout
-  - Sleeps for the specified interval
-- A custom Ctrl+C handler allows for interruption and exit at any time.
+- Fan monitoring files at `/sys/devices/platform/cooling_fan/hwmon/*/{pwm1,fan1_input}` (if hardware supports it - it definitely should)
 
 ## License
 
-MIT
+[MIT](LICENSE)
